@@ -24,5 +24,6 @@ if args.action == 'add':
 else:
     values.discard(key)
 data[name] = sorted(values)
+data['revision'] = int(data.get('revision', 0)) + 1
 path.write_text(json.dumps(data, indent=2) + '\n')
 print('名单文件已更新；提交并推送后由模块读取。')
