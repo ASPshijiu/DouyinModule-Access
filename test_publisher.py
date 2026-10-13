@@ -19,4 +19,12 @@ class PublisherTest(unittest.TestCase):
         a=self.policy()|dict(whitelist=[J,K]);b=a|dict(whitelist=[K,J])
         self.assertEqual(p.canonical(a),p.canonical(b))
         self.assertNotEqual(p.canonical(a),p.canonical(a|dict(administrators=[J])))
+    def test_published_size_includes_signature(self):
+        import json
+        a=self.policy()|dict(blacklist=['sha256:'+format(i,'064x') for i in range(13700)])
+        p.validate(a)
+        raw=json.dumps(a|dict(signature='A'*512),separators=(',',':'))+'\n'
+        self.assertLessEqual(len(raw.encode()),1024*1024)
+        with self.assertRaises(ValueError):
+            p.validate(a|dict(blacklist=['sha256:'+format(i,'064x') for i in range(14500)]))
 if __name__=='__main__':unittest.main()

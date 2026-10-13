@@ -22,7 +22,7 @@ def validate(d):
         if len(a)!=len(set(a)): raise ValueError('重复标识')
     if not d['administrators']: raise ValueError('至少保留一名管理员')
     if set(d['blacklist']) & set(d['whitelist']): raise ValueError('黑白名单冲突')
-    if len(json.dumps(d).encode())>1024*1024: raise ValueError('名单过大')
+    if len(json.dumps(d,separators=(',',':')).encode())>1024*1024-1024: raise ValueError('名单过大')
 
 def canonical(d):
     return ('doux-access-v1\n'+str(d['revision'])+'\n'+'\n'.join(sorted(d['blacklist']))+
@@ -65,7 +65,8 @@ def publish():
         sig=subprocess.run(['openssl','dgst','-sha256','-sign',str(key)],input=canonical(proposal),capture_output=True,check=True).stdout
     signed={k:proposal[k] for k in ('schema','revision',*LISTS)}
     signed['signature']=base64.b64encode(sig).decode()
-    raw=json.dumps(signed,ensure_ascii=False,indent=2)+'\n'
+    raw=json.dumps(signed,ensure_ascii=False,separators=(',',':'))+'\n'
+    if len(raw.encode())>1024*1024:raise ValueError('签名名单过大')
     if signed!=current:
         api('policies/access.json',token,'PUT',dict(branch='master',sha=current_reply['sha'],
             content=base64.b64encode(raw.encode()).decode(),message='发布签名名单第'+str(signed['revision'])+'版'))
