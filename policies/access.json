@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "revision": 11,
+  "revision": 12,
   "blacklist": [
     "sha256:027203e136a99ebe4bde428cfa50441a60e3647a84035da1d0f2cf4be4608ac5",
     "sha256:03ba516bfe20f9512f47168255d6c7e9491f68309e70d95a4d05f25648b98883",
@@ -92,5 +92,9 @@
   ],
   "whitelist": [
     "sha256:6db8a4381bd4f459f24e6ca52fb32bda38363dc24829ff325e79c4c1c92fc81d"
-  ]
+  ],
+  "administrators": [
+    "sha256:6db8a4381bd4f459f24e6ca52fb32bda38363dc24829ff325e79c4c1c92fc81d"
+  ],
+  "signature": "WLD8wwznyT7arBgefhleimrOBCQehMWscZzY/qicSp1pe3CTnOhdaEvbfLknvvlC4wGGm5ewMPFSn16wM5JAMxyVRqGD2XflOjIwUOHNFhJTOglca9odVzn3B+kOZJ/3axg0UQR1l35NsN/0xR2+kKxtEdnXqXsvcFdN/qpeOFeWJ1fA5MwJCUUU3tJ+MX2MHHT6PuvQB6v2oN5O7mkNXmUudgA5j+yXgtisyQFwRQuNHujrz8KeE6hE1Gj0XqeMSz4wyHMDt1G8+1hqArDplGgfqyIWrgEkt3jz94GkBnF4zE6aKEuqoItcNe18NGfuNjGPViV6CxZ1gSguqguh5tTm/mRbZyz9aTckm897ARAAuMndpyELawlHiZ++X0QAuuxFpUnpxE8QQ/wKT6YUdTA1yhyShFtYovh9aWTUjOYeVFIHfknFvkpsWGIDwrL1eLFhE9luLaqy3nWjcfSYfEOgIlg/77+4koIPz3LEz/lbNUbn+CWpIlXscU87DeCD"
 }
