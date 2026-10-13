@@ -1,29 +1,35 @@
-"""本地维护名单；输入的UID不会写入文件或输出。"""
+"""备用管理入口；隐藏输入UID和令牌，上传Gitee提案，服务器签名后发布。"""
 import argparse
+import base64
 import getpass
 import hashlib
 import json
-from pathlib import Path
 import re
+import publisher
 
-parser = argparse.ArgumentParser()
-parser.add_argument('list', choices=['black', 'white'])
-parser.add_argument('action', choices=['add', 'remove'])
-args = parser.parse_args()
-uid = getpass.getpass('输入抖音UID（隐藏输入）: ')
-if not re.fullmatch(r'[1-9][0-9]{0,29}', uid):
-    parser.error('UID格式不正确')
-key = 'sha256:' + hashlib.sha256(uid.encode()).hexdigest()
-path = Path(__file__).parent / 'policies/access.json'
-data = json.loads(path.read_text())
-assert data['schema'] == 1
-name = args.list + 'list'
-values = set(data[name])
-if args.action == 'add':
-    values.add(key)
-else:
-    values.discard(key)
-data[name] = sorted(values)
-data['revision'] = int(data.get('revision', 0)) + 1
-path.write_text(json.dumps(data, indent=2) + '\n')
-print('名单文件已更新；提交并推送后由模块读取。')
+def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument('list',choices=['black','white','admin'])
+    parser.add_argument('action',choices=['add','remove'])
+    args=parser.parse_args()
+    uid=getpass.getpass('输入抖音UID（隐藏输入）: ')
+    if not re.fullmatch(r'[1-9][0-9]{0,29}',uid):parser.error('UID格式不正确')
+    token=getpass.getpass('输入Gitee仓库授权令牌（隐藏输入）: ')
+    remote=publisher.api('policies/proposal.json',token);data=publisher.document(remote);publisher.validate(data)
+    key='sha256:'+hashlib.sha256(uid.encode()).hexdigest()
+    name='administrators' if args.list=='admin' else args.list+'list'
+    old=json.dumps(data,sort_keys=True)
+    values=set(data[name])
+    if args.action=='add':
+        values.add(key)
+        if args.list in ('black','white'):
+            other='whitelist' if args.list=='black' else 'blacklist'
+            data[other]=sorted(set(data[other])-{key})
+    else:values.discard(key)
+    data[name]=sorted(values)
+    if json.dumps(data,sort_keys=True)==old:
+        print('名单未变化');return
+    data['revision']+=1;publisher.validate(data)
+    publisher.api('policies/proposal.json',token,'PUT',dict(branch='master',sha=remote['sha'],content=base64.b64encode(json.dumps(data).encode()).decode(),message='更新名单提案第'+str(data['revision'])+'版'))
+    print('提案已上传，等待自动签名发布。')
+if __name__=='__main__':main()

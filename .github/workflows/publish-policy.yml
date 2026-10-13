@@ -1,0 +1,32 @@
+name: 校验签名并同步名单
+on:
+  schedule:
+    - cron: '3-59/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-policy
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: 校验发布逻辑
+        run: python3 -m unittest test_publisher
+      - name: 签名并发布到 Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          POLICY_SIGNING_KEY: ${{ secrets.POLICY_SIGNING_KEY }}
+        run: python3 publisher.py
+      - name: 同步 GitHub 备用源
+        run: |
+          git config user.name 'DouX名单发布'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add policies/access.json
+          if ! git diff --cached --quiet; then
+            git commit -m '同步已验证签名名单'
+            git push origin HEAD:main
+          fi
